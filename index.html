@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>宏國地政｜付費諮詢預約</title>
+  <style>
+    :root{--navy:#073b78;--blue:#0b91dd;--sky:#eaf7ff;--yellow:#ffd55a;--ink:#11324f;--muted:#63788d;--line:#d9e8f3;--ok:#05a870}
+    *{box-sizing:border-box}body{margin:0;background:#eef5fa;color:var(--ink);font-family:"Microsoft JhengHei","Noto Sans TC",system-ui,sans-serif;font-size:18px}
+    .app{width:min(100%,460px);min-height:100vh;margin:auto;background:#fff;padding-bottom:110px;box-shadow:0 0 38px #0a35551a}
+    header{padding:18px 20px 22px;color:#fff;background:linear-gradient(135deg,var(--navy),var(--blue));border-radius:0 0 28px 28px}
+    .brand{display:flex;align-items:center;justify-content:space-between;font-size:15px;font-weight:700;opacity:.95}
+    .brand b{font-size:18px}.member{background:#ffffff24;border:1px solid #ffffff55;padding:6px 10px;border-radius:999px}
+    h1{font-size:30px;line-height:1.25;margin:24px 0 7px}header p{font-size:17px;line-height:1.6;margin:0;color:#e5f6ff}
+    .steps{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin:18px 16px 10px}.step{padding:9px 4px;text-align:center;border-radius:12px;background:#edf4f9;color:#74889a;font-size:14px;font-weight:800}.step.on{background:var(--navy);color:#fff}
+    main{padding:6px 18px}.panel{display:none}.panel.on{display:block}.eyebrow{margin:18px 0 5px;color:var(--blue);font-size:15px;font-weight:900}.panel h2{font-size:27px;margin:0 0 7px}.hint{margin:0 0 16px;color:var(--muted);font-size:16px;line-height:1.6}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:11px}.choice{appearance:none;width:100%;min-height:92px;border:2px solid var(--line);border-radius:17px;background:#fff;color:var(--ink);font:inherit;font-size:19px;font-weight:900;line-height:1.35;padding:14px 10px;box-shadow:0 5px 16px #0d41690b}.choice small{display:block;margin-top:5px;color:var(--muted);font-size:14px;font-weight:600}.choice.selected{border-color:var(--blue);background:var(--sky);box-shadow:0 0 0 3px #0b91dd1e}
+    .advisor{display:flex;align-items:center;gap:14px;width:100%;margin:11px 0;padding:16px;border:2px solid var(--line);border-radius:18px;background:#fff;text-align:left;color:var(--ink)}.advisor.selected{border-color:var(--blue);background:var(--sky)}.avatar{display:grid;place-items:center;width:64px;height:64px;flex:0 0 64px;border-radius:18px;background:linear-gradient(135deg,var(--navy),var(--blue));color:#fff;font-size:26px;font-weight:900}.advisor strong{display:block;font-size:22px}.advisor span{display:block;margin-top:4px;color:var(--muted);font-size:15px;line-height:1.45}
+    .notice{margin:15px 0;padding:13px 14px;border-radius:14px;background:#fff8db;color:#684f00;font-size:15px;line-height:1.55}.dates{display:flex;gap:9px;overflow:auto;padding:3px 1px 12px}.date{min-width:92px;padding:12px 7px;border:2px solid var(--line);border-radius:16px;background:#fff;color:var(--ink);font:inherit;font-weight:800}.date small{display:block;margin-top:4px;color:var(--muted)}.date.selected{border-color:var(--blue);background:var(--sky)}.slots{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.slot{padding:14px 5px;border:2px solid var(--line);border-radius:14px;background:#fff;color:var(--ink);font:inherit;font-size:18px;font-weight:900}.slot.selected{border-color:var(--blue);background:var(--blue);color:#fff}
+    .summary{border:1px solid var(--line);border-radius:18px;overflow:hidden}.summary div{display:grid;grid-template-columns:92px 1fr;padding:14px 15px;border-bottom:1px solid var(--line)}.summary div:last-child{border:0}.summary span{color:var(--muted)}.summary b{font-size:18px}.status{margin:15px 0;padding:16px;border-radius:16px;background:#e8fff6;color:#056648;font-weight:800;line-height:1.55}
+    footer{position:fixed;left:50%;bottom:0;transform:translateX(-50%);width:min(100%,460px);padding:12px 18px calc(12px + env(safe-area-inset-bottom));background:#ffffffed;border-top:1px solid var(--line);backdrop-filter:blur(12px)}.next{width:100%;height:58px;border:0;border-radius:17px;background:linear-gradient(135deg,var(--navy),var(--blue));color:#fff;font:inherit;font-size:21px;font-weight:900}.next:disabled{background:#aab9c5}.back{display:block;margin:15px auto 0;border:0;background:none;color:var(--blue);font:inherit;font-size:16px;font-weight:800}
+  </style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="brand"><b>宏國地政｜易丞地政</b><span class="member">預約申請</span></div>
+    <h1>付費專人諮詢預約</h1>
+    <p>像掛號一樣選擇顧問與可申請時段；完成匯款並經人工核帳後，才正式建立行事曆。</p>
+  </header>
+  <div class="steps"><div class="step on">1 服務</div><div class="step">2 顧問</div><div class="step">3 時間</div><div class="step">4 確認</div></div>
+  <main>
+    <section class="panel on" data-panel="0">
+      <p class="eyebrow">STEP 1</p><h2>要諮詢什麼？</h2><p class="hint">先選擇最接近的項目，細節可在送出後再由專人確認。</p>
+      <div class="grid" id="services">
+        <button class="choice">買賣過戶<small>流程・契約・風險</small></button>
+        <button class="choice">稅務規劃<small>房地合一・實拿</small></button>
+        <button class="choice">貸款規劃<small>收支比・銀行評估</small></button>
+        <button class="choice">繼承贈與<small>傳承・信託</small></button>
+        <button class="choice">土地整合<small>共有・合建・開發</small></button>
+        <button class="choice">文件審閱<small>契約與風險健檢</small></button>
+      </div>
+    </section>
+    <section class="panel" data-panel="1">
+      <p class="eyebrow">STEP 2</p><h2>選擇諮詢顧問</h2><p class="hint">第一階段先開放楊總；新增其他顧問時可直接加入，不必重做頁面。</p>
+      <button class="advisor" data-name="楊總"><span class="avatar">楊</span><span><strong>楊總｜楊翊晟</strong><span>指定顧問・不動產交易、稅務、貸款與土地整合</span></span></button>
+      <button class="advisor" data-name="專業團隊配對"><span class="avatar">團</span><span><strong>不指定顧問</strong><span>由公司依案件類型與時段安排適合人員</span></span></button>
+    </section>
+    <section class="panel" data-panel="2">
+      <p class="eyebrow">STEP 3</p><h2>選擇可申請時間</h2><p class="hint">僅顯示目前沒有衝突的候選時間；送出申請不代表已預約成功。</p>
+      <div class="notice">以下是依目前 Google 行事曆產生的介面預覽。正式版會在每次開啟時即時重算。</div>
+      <div class="dates"><button class="date selected" data-date="8/17（一）">8/17<small>週一</small></button><button class="date" data-date="8/18（二）">8/18<small>週二</small></button><button class="date" data-date="其他日期">其他<small>由專人協調</small></button></div>
+      <div class="slots" id="slots"><button class="slot">11:00</button><button class="slot">13:30</button><button class="slot">14:30</button></div>
+    </section>
+    <section class="panel" data-panel="3">
+      <p class="eyebrow">STEP 4</p><h2>確認申請內容</h2><p class="hint">按下送出後會回到 LINE 並帶入申請內容，請再按一次送出；專人將向您確認姓名、電話、費用與匯款方式。</p>
+      <div class="summary"><div><span>服務</span><b id="sumService">—</b></div><div><span>顧問</span><b id="sumAdvisor">—</b></div><div><span>候選時間</span><b id="sumTime">—</b></div><div><span>目前狀態</span><b>尚未成立預約</b></div></div>
+      <div class="status">送出後：專人聯繫 → 說明費用 → 客戶匯款 → 人工核帳 → 再次檢查空檔 → 正式建立 Google 行事曆。</div>
+    </section>
+    <button class="back" id="back" hidden>返回上一步</button>
+  </main>
+  <footer><button class="next" id="next" disabled>請先選擇服務</button></footer>
+</div>
+<script>
+  const state={step:0,service:'',advisor:'',date:'8/17（一）',time:''};
+  const panels=[...document.querySelectorAll('.panel')], steps=[...document.querySelectorAll('.step')], next=document.querySelector('#next'), back=document.querySelector('#back');
+  const slotMap={'8/17（一）':['11:00','13:30','14:30'],'8/18（二）':['13:30','14:30'],'其他日期':['由專人協調']};
+  function pick(group,button){group.querySelectorAll('button').forEach(x=>x.classList.remove('selected'));button.classList.add('selected')}
+  document.querySelector('#services').onclick=e=>{const b=e.target.closest('button');if(!b)return;pick(e.currentTarget,b);state.service=b.childNodes[0].textContent.trim();render()};
+  document.querySelectorAll('.advisor').forEach(b=>b.onclick=()=>{document.querySelectorAll('.advisor').forEach(x=>x.classList.remove('selected'));b.classList.add('selected');state.advisor=b.dataset.name;render()});
+  document.querySelectorAll('.date').forEach(b=>b.onclick=()=>{document.querySelectorAll('.date').forEach(x=>x.classList.remove('selected'));b.classList.add('selected');state.date=b.dataset.date;state.time='';document.querySelector('#slots').innerHTML=slotMap[state.date].map(t=>`<button class="slot">${t}</button>`).join('');bindSlots();render()});
+  function bindSlots(){document.querySelectorAll('.slot').forEach(b=>b.onclick=()=>{document.querySelectorAll('.slot').forEach(x=>x.classList.remove('selected'));b.classList.add('selected');state.time=b.textContent;render()})}bindSlots();
+  function valid(){return [!!state.service,!!state.advisor,!!state.time,true][state.step]}
+  function render(){panels.forEach((p,i)=>p.classList.toggle('on',i===state.step));steps.forEach((s,i)=>s.classList.toggle('on',i<=state.step));back.hidden=state.step===0;const labels=['下一步：選擇顧問','下一步：選擇時間','查看申請內容','送出付費諮詢申請'];next.textContent=valid()?labels[state.step]:['請先選擇服務','請先選擇顧問','請先選擇時間',''][state.step];next.disabled=!valid();document.querySelector('#sumService').textContent=state.service||'—';document.querySelector('#sumAdvisor').textContent=state.advisor||'—';document.querySelector('#sumTime').textContent=state.time?`${state.date} ${state.time}`:'—';window.scrollTo({top:0,behavior:'smooth'})}
+  next.onclick=()=>{if(!valid())return;if(state.step<3){state.step++;render()}else{const message=`【付費諮詢預約申請】\n服務：${state.service}\n希望顧問：${state.advisor}\n候選時間：${state.date} ${state.time}\n\n我了解此為候選時段，須由專人聯繫、完成匯款並核帳後，才正式建立行事曆。`;location.href=`https://line.me/R/oaMessage/%40604gpqef/?${encodeURIComponent(message)}`}}
+  back.onclick=()=>{if(state.step>0){state.step--;render()}}
+</script>
+</body>
+</html>

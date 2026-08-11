@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>宏國地政｜免費工具</title>
+  <style>
+    :root{--navy:#073b78;--blue:#0b91dd;--sky:#eaf7ff;--yellow:#ffd55a;--ink:#11324f;--muted:#5e7489;--line:#cfe2ef}
+    *{box-sizing:border-box}body{margin:0;background:#eef5fa;color:var(--ink);font-family:"Microsoft JhengHei","Noto Sans TC",system-ui,sans-serif;font-size:22px}
+    .app{width:min(100%,560px);min-height:100vh;margin:auto;background:#fff;padding-bottom:28px;box-shadow:0 0 38px #0a35551a}
+    header{padding:26px 22px 30px;color:#fff;background:linear-gradient(135deg,var(--navy),var(--blue));border-radius:0 0 30px 30px}
+    .brand{font-size:22px;font-weight:900}h1{font-size:40px;line-height:1.25;margin:24px 0 10px}header p{font-size:22px;line-height:1.65;margin:0;color:#f0faff}
+    main{padding:22px 20px}.notice{margin:0 0 18px;padding:17px;border-radius:17px;background:#fff8db;color:#674e00;font-size:21px;font-weight:800;line-height:1.6}
+    .tools{display:grid;grid-template-columns:1fr;gap:14px}.tool{display:flex;align-items:center;justify-content:space-between;min-height:108px;padding:18px 20px;border:3px solid var(--line);border-radius:20px;background:#fff;color:var(--ink);text-decoration:none;box-shadow:0 5px 16px #0d41690b}.tool strong{display:block;font-size:30px;line-height:1.35}.tool span{display:block;margin-top:6px;color:var(--muted);font-size:20px;font-weight:700}.tool b{font-size:32px;color:var(--blue)}.tool.hot{border-color:#efbd26;background:#fff8d9}.tool.hot b{color:#b77800}
+    .booking{display:block;margin-top:20px;padding:20px;border-radius:19px;background:linear-gradient(135deg,var(--navy),var(--blue));color:#fff;text-align:center;text-decoration:none;font-size:27px;font-weight:900}
+  </style>
+</head>
+<body>
+<div class="app">
+  <header><div class="brand">宏國地政｜易丞地政</div><h1>免費試算與說明工具</h1><p>點選項目後會回到官方 LINE，並帶入正確關鍵字。</p></header>
+  <main>
+    <div class="notice">工具提供初步整理，正式稅額、貸款及交易風險仍須依個案資料確認。</div>
+    <div class="tools">
+      <a class="tool" data-key="收支比" href="#"><span><strong>收支比</strong><span>貸款負擔與銀行評估</span></span><b>›</b></a>
+      <a class="tool" data-key="房屋稅" href="#"><span><strong>房屋稅</strong><span>自住、非自住與持有成本</span></span><b>›</b></a>
+      <a class="tool hot" data-key="房地合一稅" href="#"><span><strong>房地合一稅</strong><span>取得日、成本與出售稅務</span></span><b>›</b></a>
+      <a class="tool" data-key="實拿" href="#"><span><strong>賣屋實拿</strong><span>售價扣除稅費與成本</span></span><b>›</b></a>
+      <a class="tool" data-key="買房費用" href="#"><span><strong>買房費用</strong><span>簽約、過戶與貸款支出</span></span><b>›</b></a>
+    </div>
+    <a class="booking" href="./">需要專人判斷｜前往付費預約</a>
+  </main>
+</div>
+<script>
+  document.querySelectorAll('[data-key]').forEach(link=>link.onclick=e=>{e.preventDefault();const key=link.dataset.key;location.href=`https://line.me/R/oaMessage/%40604gpqef/?${encodeURIComponent(key)}`});
+</script>
+</body>
+</html>

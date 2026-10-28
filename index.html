@@ -216,6 +216,7 @@
               </label>
             </div>
           </div>
+          <button type="button" class="plain-link" id="retryAvailability">重新查詢可申請時間 →</button>
           <p class="status">行事曆僅用於排除既有行程；若同步失敗或顧問未設定可服務時段，不會顯示任何假空檔。</p>
         </section>
         <section class="panel" data-panel="3" aria-labelledby="heading-3">
@@ -257,6 +258,8 @@
   var preferredDate = document.getElementById("preferredDate");
   var preferredPeriod = document.getElementById("preferredPeriod");
   var requestSerial = 0;
+  var loading = false, submitting = false;
+  var expiryTimer;
   function dateParts(iso) {
     var p = new Intl.DateTimeFormat("en-US",{timeZone:TZ,year:"numeric",month:"2-digit",day:"2-digit"}).formatToParts(new Date(iso));
     var v = {};p.forEach(function(x){v[x.type]=x.value});
@@ -285,6 +288,7 @@
   });
   document.getElementById("advisorChoices").addEventListener("click",function(event){
     var button=event.target.closest("[data-advisor]");if(!button)return;
+    requestSerial++;
     state.advisor=button.dataset.advisor;state.advisorLabel=advisorLabel(state.advisor);
     state.mode="manual";state.start="";state.slots=[];state.checkedAt="";
     pickOne("#advisorChoices","button",button);render();
@@ -298,11 +302,17 @@
     return parts.join("　")+"（希望時段，尚未確認）";
   }
   function slotSummary() {return dateParts(state.start)+"　"+labelSlot(state.start)+"（僅供申請，未保留）";}
+  function validTime() {
+    if(state.mode==="slot")return !!state.start && Date.parse(state.start)>Date.now()
+      && Number.isFinite(Date.parse(state.checkedAt)) && Date.now()-Date.parse(state.checkedAt)<180000;
+    return !!preferredPeriod.value && (!preferredDate.value || preferredDate.value>=todayTaipei());
+  }
   function valid() {
+    if(loading || submitting)return false;
     if(state.step===0)return !!state.service;
     if(state.step===1)return !!state.advisor;
-    if(state.step===2)return state.mode==="slot" ? !!state.start : !!preferredPeriod.value;
-    return !!state.service && !!state.advisor && (state.mode==="slot" ? !!state.start : !!preferredPeriod.value);
+    if(state.step===2)return validTime();
+    return !!state.service && !!state.advisor && validTime();
   }
   function render(){
     panels.forEach(function(panel,i){panel.classList.toggle("on",i===state.step)});
@@ -312,6 +322,7 @@
       if(i===state.step)item.setAttribute("aria-current","step");else item.removeAttribute("aria-current");
     });
     back.hidden=state.step===0;
+    preferredDate.min=todayTaipei();
     var enabled=valid();var labels=["下一步：選擇顧問","下一步：選擇時間","下一步：確認申請","前往 LINE 傳送申請"];
     var missing=["請先選擇服務","請先選擇顧問","請先選擇偏好時段","請確認申請"];
     next.disabled=!enabled;next.textContent=enabled?labels[state.step]:missing[state.step];
@@ -324,12 +335,14 @@
     if(important)status.setAttribute("data-error","true");else status.removeAttribute("data-error");
   }
   function showManual(reason) {
+    requestSerial++;clearTimeout(expiryTimer);loading=false;
     realBox.hidden=true;manualBox.hidden=false;
     state.mode="manual";state.start="";state.slots=[];state.checkedAt="";
     if(reason)setStatus(reason,true);
     render();
   }
   function showSlots() {
+    state.slots=state.slots.filter(function(s){return Date.parse(s.start)>Date.now()});
     var dates=Array.from(new Set(state.slots.map(function(s){return dateParts(s.start)})));
     if(!dates.length){showManual("目前沒有可查詢的候選時段；可填寫希望時間，由專人協調。");return;}
     realBox.hidden=false;manualBox.hidden=true;state.mode="slot";
@@ -355,64 +368,86 @@
     if(typeof v!=="string" || !/^https:\/\/[a-z0-9.-]+\/api\/consult-availability\/?$/i.test(v.trim()))return "";
     return v.trim();
   }
-  async function querySlots() {
+  async function querySlots(advisor) {
     var endpoint=backendUrl();
     if(!endpoint)throw new Error("not_configured");
-    var target=new URL(endpoint);target.searchParams.set("advisor",state.advisor);
+    var target=new URL(endpoint);target.searchParams.set("advisor",advisor);
     target.searchParams.set("days","14");target.searchParams.set("from",todayTaipei());
-    var controller=new AbortController();var timeout=setTimeout(function(){controller.abort()},9000);
+    var controller=new AbortController();var timeout=setTimeout(function(){controller.abort()},22000);
     try {
       var response=await fetch(target.toString(),{method:"GET",cache:"no-store",signal:controller.signal,headers:{"Accept":"application/json"}});
       if(!response.ok)throw new Error("calendar_unavailable");
       var data=await response.json();
-      if(!data || data.source!=="google-calendar-freebusy" || data.advisor!==state.advisor || !Array.isArray(data.slots))
+      if(!data || data.source!=="google-calendar-freebusy" || data.advisor!==advisor || data.timezone!==TZ || !Array.isArray(data.slots) || data.slots.length>120)
         throw new Error("invalid_calendar_response");
-      if(!data.checkedAt || Math.abs(Date.now()-Date.parse(data.checkedAt))>180000)
+      if(typeof data.checkedAt!=="string" || !Number.isFinite(Date.parse(data.checkedAt)) || Math.abs(Date.now()-Date.parse(data.checkedAt))>180000)
         throw new Error("stale_calendar_response");
-      var clean=data.slots.filter(function(s){
-        return s && typeof s.start==="string" && typeof s.end==="string" &&
-          /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\+08:00$/.test(s.start) &&
-          Number.isFinite(Date.parse(s.start)) && Date.parse(s.start)>Date.now();
-      }).slice(0,120).sort(function(a,b){return Date.parse(a.start)-Date.parse(b.start)});
+      var stamp=/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\+08:00$/;
+      var seen=new Set();
+      data.slots.forEach(function(s){
+        if(!s || typeof s.start!=="string" || typeof s.end!=="string" || !stamp.test(s.start) || !stamp.test(s.end)
+            || !Number.isFinite(Date.parse(s.start)) || !Number.isFinite(Date.parse(s.end))
+            || Date.parse(s.end)<=Date.parse(s.start) || seen.has(s.start))throw new Error("invalid_slot");
+        seen.add(s.start);
+      });
+      var clean=data.slots.filter(function(s){return Date.parse(s.start)>Date.now()})
+        .sort(function(a,b){return Date.parse(a.start)-Date.parse(b.start)});
       return {slots:clean,checkedAt:data.checkedAt};
     } finally {clearTimeout(timeout)}
   }
   async function loadAvailability(){
-    var serial=++requestSerial;showManual("");
+    showManual("");
+    var serial=++requestSerial, advisor=state.advisor;
     if(state.advisor==="team"){setStatus("團隊配對須先確認承辦顧問，目前由專人協調時段。");return;}
     if(!backendUrl()){setStatus("尚未開通安全的 Google Calendar 即時查詢；請填寫希望時間，由專人確認。");return;}
+    loading=true;render();
     setStatus("正在向 Google Calendar 查詢最新可申請時間…");
     try {
-      var result=await querySlots();
+      var result=await querySlots(advisor);
       if(serial!==requestSerial || state.step!==2)return;
+      loading=false;
       state.slots=result.slots;state.checkedAt=result.checkedAt;state.start="";
       setStatus("Google Calendar 已查詢（台灣時間）；候選時段不代表保留或預約成立。");
       showSlots();
+      if(state.mode==="slot")expiryTimer=setTimeout(function(){
+        if(state.mode!=="slot")return;
+        if(state.step===3)move(2,false);
+        showManual("候選時段查詢已逾時，請重新查詢或由專人協調。");
+      },Math.max(0,180000-(Date.now()-Date.parse(result.checkedAt))));
     }catch(error) {
       if(serial!==requestSerial)return;
       showManual("目前無法取得經授權的 Google Calendar 時段。請提供希望日期及時段，交由專人協調。");
     }
   }
+  document.getElementById("retryAvailability").addEventListener("click",loadAvailability);
   document.getElementById("switchManual").addEventListener("click",function(){
     showManual("您已改選由專人協調，不會視為即時可預約時段。");
   });
-  function move(step){
+  function move(step, reload){
+    requestSerial++;loading=false;
     state.step=step;
     render();
     document.getElementById("bookingFlow").scrollIntoView({behavior:"smooth",block:"start"});
-    if(step===2)loadAvailability();
+    if(step===2 && reload!==false)loadAvailability();
   }
   next.addEventListener("click",async function(){
     if(!valid())return;
     if(state.step<3){move(state.step+1);return;}
     if(state.mode==="slot"&&state.start){
-      next.disabled=true;next.textContent="再次核對候選時間…";
+      var advisor=state.advisor, chosen=state.slots.find(function(s){return s.start===state.start});
+      var serial=++requestSerial;
+      submitting=true;next.disabled=true;next.textContent="再次核對候選時間…";
       try {
-        var result=await querySlots();
-        if(!result.slots.some(function(s){return s.start===state.start})){
-          move(2);showManual("選取的候選時段已發生變更，請改選其他時間或由專人協調。");return;
+        var result=await querySlots(advisor);
+        if(serial!==requestSerial || state.step!==3 || state.advisor!==advisor)return;
+        if(!chosen || !result.slots.some(function(s){return s.start===chosen.start && s.end===chosen.end})){
+          move(2,false);showManual("選取的候選時段已發生變更，請重新查詢或由專人協調。");return;
         }
-      }catch(error){move(2);showManual("行事曆再次核對失敗，請改由專人協調，避免誤認預約成立。");return;}
+        state.checkedAt=result.checkedAt;
+      }catch(error){
+        if(serial===requestSerial){move(2,false);showManual("行事曆再次核對失敗，請改由專人協調，避免誤認預約成立。");}
+        return;
+      }finally{submitting=false;render();}
     }
     var when=state.mode==="slot"&&state.start?slotSummary():manualSummary();
     var message="【宏國地政｜易丞地政｜付費諮詢申請】\n"+
@@ -428,3 +463,4 @@
 </script>
 </body>
 </html>
+

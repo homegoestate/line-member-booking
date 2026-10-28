@@ -24,9 +24,10 @@ test("Site retains services, advisors, LINE flow and manual fail-safe",()=>{
   assert.ok(html.includes(phrase),phrase+" missing");
  }
  assert.ok(html.includes('window.HOMEGO_BOOKING_API')||html.includes("booking-config.js"));
- assert.ok(config.includes('window.HOMEGO_BOOKING_API = ""'));
- assert.ok(html.includes("querySlots()"));
+ assert.ok(config.includes('https://nexus-line-bot.vercel.app/api/consult-availability')); 
+ assert.ok(html.includes("querySlots(advisor)"));
  assert.ok(html.includes("slotSummary()"));
  assert.ok(html.includes("showManual"));
  assert.ok(!html.includes("GOOGLE_PRIVATE_KEY"));
 });
+
